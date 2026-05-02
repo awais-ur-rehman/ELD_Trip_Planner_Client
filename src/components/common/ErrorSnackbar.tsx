@@ -8,6 +8,7 @@ import {
   Refresh as RefreshIcon,
 } from '@mui/icons-material'
 import type { ApiError, ApiErrorCode } from '@/lib/api'
+import { friendlyMessage } from '@/lib/errors'
 
 const AUTO_HIDE_MS = 8000
 
@@ -118,7 +119,7 @@ export function ErrorSnackbar({ error, onClose, onRetry }: ErrorSnackbarProps) {
               <Typography
                 sx={{ color: '#93B1C2', fontSize: '0.75rem', mt: 0.5, lineHeight: 1.45 }}
               >
-                {error?.message}
+                {friendlyMessage(error)}
               </Typography>
             </Box>
 
