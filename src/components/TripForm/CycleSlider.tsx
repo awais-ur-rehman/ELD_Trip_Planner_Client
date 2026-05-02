@@ -1,5 +1,5 @@
-import { Box, Typography, Slider, Chip, Alert } from '@mui/material'
-import { cycleSliderColor, formatHours } from '@/lib/utils'
+import { Box, Typography, Slider, Alert } from '@mui/material'
+import { cycleSliderColor } from '@/lib/utils'
 import { MAX_CYCLE_HOURS } from '@/constants/hos'
 
 const QUICK_SET_VALUES = [0, 14, 35, 56, 65]
@@ -10,22 +10,34 @@ interface CycleSliderProps {
 }
 
 export function CycleSlider({ value, onChange }: CycleSliderProps) {
-  const remaining = MAX_CYCLE_HOURS - value
+  const remaining   = MAX_CYCLE_HOURS - value
   const sliderColor = cycleSliderColor(value)
-  const isAtLimit = value >= MAX_CYCLE_HOURS
+  const isAtLimit   = value >= MAX_CYCLE_HOURS
 
   return (
     <Box>
-      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-        Current Cycle Used
+      <Typography
+        sx={{ display: 'block', fontSize: '0.625rem', color: '#7A8FA3', letterSpacing: '0.8px', textTransform: 'uppercase', fontWeight: 700, mb: 1.25 }}
+      >
+        Current Cycle Hours Used
       </Typography>
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-        <Typography variant="body2" fontWeight={500}>
-          {formatHours(value)} used
+      {/* Big number + remaining */}
+      <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', mb: 0.5 }}>
+        <Typography
+          sx={{
+            fontSize: '2rem',
+            fontWeight: 700,
+            color: value >= 68 ? '#EF4444' : value >= 60 ? '#F5A524' : '#424242',
+            fontFamily: '"JetBrains Mono", monospace',
+            lineHeight: 1,
+            letterSpacing: '-0.5px',
+          }}
+        >
+          {value % 1 === 0 ? value : value.toFixed(1)}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {formatHours(remaining)} remaining of 70h
+        <Typography sx={{ fontSize: '0.75rem', color: '#7A8FA3', pb: 0.25 }}>
+          {remaining.toFixed(1)} hrs left of 70
         </Typography>
       </Box>
 
@@ -38,26 +50,37 @@ export function CycleSlider({ value, onChange }: CycleSliderProps) {
         color={sliderColor}
         disabled={isAtLimit}
         aria-label="Current cycle hours used"
-        aria-valuetext={`${value} hours used, ${MAX_CYCLE_HOURS - value} remaining`}
-        sx={{ mb: 1.5 }}
+        aria-valuetext={`${value} hours used, ${remaining} remaining`}
+        sx={{ mb: 1.25, mt: 0.5 }}
       />
 
-      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+      {/* Quick-set chips */}
+      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
         {QUICK_SET_VALUES.map((v) => (
-          <Chip
+          <Box
             key={v}
-            label={`${v}h`}
-            variant="outlined"
-            size="small"
+            component="button"
+            type="button"
             onClick={() => onChange(v)}
             aria-label={`Set cycle hours to ${v}`}
             aria-pressed={value === v}
             sx={{
+              px: 1.25,
+              py: 0.5,
+              border: `1px solid ${value === v ? '#93B1C2' : '#D5DEE3'}`,
+              bgcolor: value === v ? '#E4ECF2' : 'white',
+              color: value === v ? '#1E2A3A' : '#7A8FA3',
+              fontSize: '0.6875rem',
+              fontFamily: '"JetBrains Mono", monospace',
+              fontWeight: value === v ? 600 : 400,
               cursor: 'pointer',
-              borderColor: value === v ? 'primary.main' : 'divider',
-              color: value === v ? 'primary.main' : 'text.secondary',
+              transition: 'all 0.1s',
+              borderRadius: '100px',
+              '&:hover': { borderColor: '#93B1C2' },
             }}
-          />
+          >
+            {v}h
+          </Box>
         ))}
       </Box>
 

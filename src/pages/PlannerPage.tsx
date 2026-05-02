@@ -15,7 +15,7 @@ import type { TripFormValues, Stop } from '@/types/trip'
 
 export function PlannerPage() {
   const { mutate, data: tripPlan, isPending, error, reset } = useTripPlan()
-  const [focusedStop, setFocusedStop]   = useState<Stop | null>(null)
+  const [focusedStop, setFocusedStop]           = useState<Stop | null>(null)
   const [cycleUsedAtStart, setCycleUsedAtStart] = useState(0)
   const lastValuesRef = useRef<TripFormValues | null>(null)
 
@@ -30,19 +30,22 @@ export function PlannerPage() {
     [mutate],
   )
 
+  const handleNewTrip = useCallback(() => {
+    reset()
+    setFocusedStop(null)
+    setCycleUsedAtStart(0)
+    lastValuesRef.current = null
+  }, [reset])
+
   const handleRetry = useCallback(() => {
-    if (lastValuesRef.current) {
-      mutate(lastValuesRef.current)
-    }
+    if (lastValuesRef.current) mutate(lastValuesRef.current)
   }, [mutate])
 
-  const handleCloseError = useCallback(() => {
-    reset()
-  }, [reset])
+  const handleCloseError = useCallback(() => reset(), [reset])
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
-      <AppHeader />
+      <AppHeader hasResults={hasResults} onNewTrip={handleNewTrip} />
 
       {hasResults && tripPlan && <TripBreadcrumb plan={tripPlan} />}
 
@@ -90,7 +93,7 @@ export function PlannerPage() {
               overflowY: 'auto',
             }}
           >
-            <TripSummary plan={tripPlan} />
+            <TripSummary plan={tripPlan} cycleUsedAtStart={cycleUsedAtStart} />
             <ELDLogSheet dailyLogs={tripPlan.daily_logs} />
           </Box>
         )}

@@ -1,124 +1,126 @@
+import { useEffect, useState } from 'react'
 import { Card, CardContent, Typography, Box } from '@mui/material'
-import { formatTime, formatDate } from '@/lib/utils'
 
-function ClockFace({ hour, minute }: { hour: number; minute: number }) {
-  const hourAngle = ((hour % 12) + minute / 60) * 30
-  const minuteAngle = minute * 6
+function toRad(deg: number) {
+  return (deg - 90) * (Math.PI / 180)
+}
 
-  const toRad = (deg: number) => (deg - 90) * (Math.PI / 180)
-  const cx = 20
-  const cy = 20
-  const r = 14
+function ClockHands({ date }: { date: Date }) {
+  const h = date.getHours()
+  const m = date.getMinutes()
+  const s = date.getSeconds()
 
-  const hx = cx + 8 * Math.cos(toRad(hourAngle))
-  const hy = cy + 8 * Math.sin(toRad(hourAngle))
-  const mx = cx + 11 * Math.cos(toRad(minuteAngle))
-  const my = cy + 11 * Math.sin(toRad(minuteAngle))
+  const hDeg = (h % 12) * 30 + m * 0.5
+  const mDeg = m * 6 + s * 0.1
+  const sDeg = s * 6
+
+  const cx = 32
+  const cy = 32
+
+  const hx = cx + 14 * Math.cos(toRad(hDeg))
+  const hy = cy + 14 * Math.sin(toRad(hDeg))
+  const mx = cx + 22 * Math.cos(toRad(mDeg))
+  const my = cy + 22 * Math.sin(toRad(mDeg))
+  const sx2 = cx + 25 * Math.cos(toRad(sDeg))
+  const sy  = cy + 25 * Math.sin(toRad(sDeg))
 
   return (
     <Box
       component="svg"
-      viewBox="0 0 40 40"
+      viewBox="0 0 64 64"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      sx={{ width: 40, height: 40, flexShrink: 0 }}
+      sx={{ width: 64, height: 64, display: 'block' }}
       aria-hidden
     >
-      <circle cx={cx} cy={cy} r={r} stroke="#93B1C2" strokeWidth="1.5" />
-      {[0, 90, 180, 270].map((angle) => {
-        const tx = cx + (r - 2) * Math.cos(toRad(angle))
-        const ty = cy + (r - 2) * Math.sin(toRad(angle))
+      {/* Outer ring */}
+      <circle cx={cx} cy={cy} r="29" fill="none" stroke="#E4ECF2" strokeWidth="2" />
+      {/* Tick marks */}
+      {Array.from({ length: 12 }, (_, i) => {
+        const a = i * 30
+        const isMain = i % 3 === 0
+        const r1 = isMain ? 24 : 26
+        const r2 = 29
+        const x1 = cx + r1 * Math.cos(toRad(a + 90))
+        const y1 = cy + r1 * Math.sin(toRad(a + 90))
+        const x2 = cx + r2 * Math.cos(toRad(a + 90))
+        const y2 = cy + r2 * Math.sin(toRad(a + 90))
         return (
-          <circle key={angle} cx={tx} cy={ty} r="1" fill="#93B1C2" opacity="0.5" />
+          <line
+            key={i}
+            x1={x1} y1={y1} x2={x2} y2={y2}
+            stroke="#D5DEE3"
+            strokeWidth={isMain ? 2 : 1}
+          />
         )
       })}
-      <line
-        x1={cx} y1={cy}
-        x2={hx} y2={hy}
-        stroke="#93B1C2" strokeWidth="2" strokeLinecap="round"
-      />
-      <line
-        x1={cx} y1={cy}
-        x2={mx} y2={my}
-        stroke="#93B1C2" strokeWidth="1.5" strokeLinecap="round"
-      />
-      <circle cx={cx} cy={cy} r="2" fill="#93B1C2" />
+      {/* Hour hand */}
+      <line x1={cx} y1={cy} x2={hx} y2={hy} stroke="#424242" strokeWidth="2.5" strokeLinecap="round" />
+      {/* Minute hand */}
+      <line x1={cx} y1={cy} x2={mx} y2={my} stroke="#424242" strokeWidth="1.5" strokeLinecap="round" />
+      {/* Second hand */}
+      <line x1={cx} y1={cy} x2={sx2} y2={sy} stroke="#EF4444" strokeWidth="1" strokeLinecap="round" />
+      {/* Center dot */}
+      <circle cx={cx} cy={cy} r="2.5" fill="#1E2A3A" />
     </Box>
   )
 }
 
-interface ETACardProps {
-  arrivalTimeIso: string | null
-}
+export function ETACard() {
+  const [now, setNow] = useState(() => new Date())
 
-export function ETACard({ arrivalTimeIso }: ETACardProps) {
-  let hour = 9
-  let minute = 0
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(id)
+  }, [])
 
-  if (arrivalTimeIso) {
-    const d = new Date(arrivalTimeIso)
-    hour = d.getHours()
-    minute = d.getMinutes()
-  }
+  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+  const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 
   return (
-    <Card
-      sx={{
-        borderRadius: 3,
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
+    <Card sx={{ flex: 1, border: 'none', bgcolor: 'white' }}>
       <CardContent
         sx={{
           p: 2,
-          flex: 1,
+          height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'space-between',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 1,
           '&:last-child': { pb: 2 },
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ display: 'block', lineHeight: 1.3 }}
-          >
-            Estimated
-            <br />
-            Arrival
-          </Typography>
-          <ClockFace hour={hour} minute={minute} />
-        </Box>
+        <Typography
+          sx={{
+            fontSize: '0.5625rem',
+            color: '#7A8FA3',
+            textTransform: 'uppercase',
+            letterSpacing: '0.7px',
+            fontWeight: 600,
+          }}
+        >
+          Local Time
+        </Typography>
 
-        {arrivalTimeIso ? (
-          <Box>
-            <Typography
-              sx={{
-                fontSize: '1.625rem',
-                fontWeight: 300,
-                lineHeight: 1,
-                color: 'text.primary',
-                fontVariantNumeric: 'tabular-nums',
-              }}
-            >
-              {formatTime(arrivalTimeIso)}
-            </Typography>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ fontSize: '0.6875rem', mt: 0.25 }}
-            >
-              {formatDate(arrivalTimeIso)}
-            </Typography>
-          </Box>
-        ) : (
-          <Typography variant="body2" color="text.secondary">
-            —
-          </Typography>
-        )}
+        <ClockHands date={now} />
+
+        <Typography
+          sx={{
+            fontSize: '1.25rem',
+            fontWeight: 300,
+            color: '#424242',
+            fontFamily: '"JetBrains Mono", monospace',
+            letterSpacing: '-1px',
+            lineHeight: 1,
+          }}
+        >
+          {timeStr}
+        </Typography>
+
+        <Typography sx={{ fontSize: '0.5625rem', color: '#A8BCC9' }}>
+          {dateStr}
+        </Typography>
       </CardContent>
     </Card>
   )
