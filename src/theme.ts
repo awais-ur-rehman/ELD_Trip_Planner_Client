@@ -22,17 +22,17 @@ export const theme = createTheme({
     },
     divider: '#D5DEE3',
     warning: { main: '#F5A524' },
-    error: { main: '#EF4444' },
+    error:   { main: '#EF4444' },
     success: { main: '#10B981' },
-    info: { main: '#3B82F6' },
+    info:    { main: '#3B82F6' },
   },
   typography: {
     fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
-    h1: { fontSize: '1.5rem', fontWeight: 600 },
-    h2: { fontSize: '1.125rem', fontWeight: 500 },
+    h1: { fontSize: '1.5rem',    fontWeight: 600 },
+    h2: { fontSize: '1.125rem',  fontWeight: 500 },
     h3: { fontSize: '0.9375rem', fontWeight: 500 },
     body1: { fontSize: '0.875rem', lineHeight: 1.6 },
-    body2: { fontSize: '0.75rem', lineHeight: 1.5 },
+    body2: { fontSize: '0.75rem',  lineHeight: 1.5 },
     caption: {
       fontSize: '0.6875rem',
       letterSpacing: '0.5px',
@@ -40,7 +40,8 @@ export const theme = createTheme({
     },
     button: { fontWeight: 500, textTransform: 'none' as const },
   },
-  shape: { borderRadius: 10 },
+  // Setting to 0 means all numeric borderRadius values in sx props resolve to 0px.
+  shape: { borderRadius: 0 },
   components: {
     MuiButton: {
       styleOverrides: {
@@ -75,8 +76,30 @@ export const theme = createTheme({
         },
       },
     },
+    MuiPaper: {
+      styleOverrides: {
+        root: { borderRadius: 0 },
+      },
+    },
+    MuiAlert: {
+      styleOverrides: {
+        root: { borderRadius: 0 },
+      },
+    },
+    MuiAccordion: {
+      styleOverrides: {
+        root: {
+          borderRadius: '0 !important',
+          '&:first-of-type': { borderRadius: '0 !important' },
+          '&:last-of-type':  { borderRadius: '0 !important' },
+        },
+      },
+    },
     MuiChip: {
-      styleOverrides: { root: { borderRadius: 12 } },
+      styleOverrides: { root: { borderRadius: 0 } },
+    },
+    MuiTooltip: {
+      styleOverrides: { tooltip: { borderRadius: 0 } },
     },
     MuiTab: {
       styleOverrides: {

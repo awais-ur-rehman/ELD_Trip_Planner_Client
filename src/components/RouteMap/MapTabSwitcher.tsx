@@ -37,7 +37,7 @@ export function MapTabSwitcher() {
         transform: 'translateX(-50%)',
         zIndex: 1000,
         display: 'flex',
-        borderRadius: 50,
+        borderRadius: '9999px',
         border: '1px solid',
         borderColor: 'divider',
         overflow: 'hidden',

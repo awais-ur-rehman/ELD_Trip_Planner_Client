@@ -106,7 +106,7 @@ export function TripForm({ onSubmit, isLoading }: TripFormProps) {
         size="large"
         disabled={isDisabled}
         startIcon={isLoading ? <CircularProgress size={18} color="inherit" /> : null}
-        sx={{ mt: 3, height: 52, borderRadius: '12px' }}
+        sx={{ mt: 3, height: 52 }}
       >
         {isLoading ? 'Calculating...' : 'Plan My Trip →'}
       </Button>

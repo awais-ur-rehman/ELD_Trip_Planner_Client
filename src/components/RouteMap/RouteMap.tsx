@@ -17,7 +17,7 @@ const LEAFLET_POPUP_RESET = (
     styles={{
       '.leaflet-popup-content-wrapper': {
         padding: 0,
-        borderRadius: '12px',
+        borderRadius: '0px',
         border: '1px solid #D5DEE3',
         boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
         overflow: 'hidden',

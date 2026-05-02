@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { Box } from '@mui/material'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { TripBreadcrumb } from '@/components/layout/TripBreadcrumb'
@@ -15,18 +15,30 @@ import type { TripFormValues, Stop } from '@/types/trip'
 
 export function PlannerPage() {
   const { mutate, data: tripPlan, isPending, error, reset } = useTripPlan()
-  const [focusedStop, setFocusedStop] = useState<Stop | null>(null)
+  const [focusedStop, setFocusedStop]   = useState<Stop | null>(null)
   const [cycleUsedAtStart, setCycleUsedAtStart] = useState(0)
+  const lastValuesRef = useRef<TripFormValues | null>(null)
 
   const hasResults = Boolean(tripPlan)
 
   const handleSubmit = useCallback(
     (values: TripFormValues) => {
+      lastValuesRef.current = values
       setCycleUsedAtStart(values.current_cycle_used_hours)
       mutate(values)
     },
     [mutate],
   )
+
+  const handleRetry = useCallback(() => {
+    if (lastValuesRef.current) {
+      mutate(lastValuesRef.current)
+    }
+  }, [mutate])
+
+  const handleCloseError = useCallback(() => {
+    reset()
+  }, [reset])
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
@@ -35,6 +47,7 @@ export function PlannerPage() {
       {hasResults && tripPlan && <TripBreadcrumb plan={tripPlan} />}
 
       <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        {/* Left panel */}
         <Box
           sx={{
             width: hasResults ? 300 : 380,
@@ -60,10 +73,12 @@ export function PlannerPage() {
           )}
         </Box>
 
+        {/* Map */}
         <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           <RouteMap plan={tripPlan ?? null} focusedStop={focusedStop} isLoading={isPending} />
         </Box>
 
+        {/* Right panel */}
         {hasResults && tripPlan && (
           <Box
             sx={{
@@ -81,7 +96,11 @@ export function PlannerPage() {
         )}
       </Box>
 
-      <ErrorSnackbar error={error?.message ?? null} onClose={reset} />
+      <ErrorSnackbar
+        error={error}
+        onClose={handleCloseError}
+        onRetry={lastValuesRef.current ? handleRetry : undefined}
+      />
     </Box>
   )
 }

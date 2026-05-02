@@ -17,7 +17,7 @@ export function HOSReference() {
       sx={{
         border: '1px solid',
         borderColor: 'divider',
-        borderRadius: '10px !important',
+        borderRadius: '0 !important',
         '&:before': { display: 'none' },
       }}
     >
