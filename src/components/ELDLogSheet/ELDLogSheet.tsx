@@ -1,12 +1,80 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Box, Tabs, Tab, Typography, Badge, Button, IconButton } from '@mui/material'
+import { createPortal } from 'react-dom'
+import { Box, Tabs, Tab, Typography, Badge, Button, IconButton, GlobalStyles } from '@mui/material'
 import { OpenInFull as OpenInFullIcon, Close as CloseIcon, Print as PrintIcon } from '@mui/icons-material'
 import { LogSheetHeader } from './LogSheetHeader'
 import { LogCanvas } from './LogCanvas'
 import type { DailyLog } from '@/types/trip'
 
-interface ELDLogSheetProps {
-  dailyLogs: DailyLog[]
+// ── Print styles ──────────────────────────────────────────────────────────────
+// Injected globally — only active during @media print.
+// Uses visibility (not display) so canvas content is preserved.
+// #eld-print-zone is portal-mounted directly in <body> so body > * rules don't block it.
+const PRINT_STYLES = (
+  <GlobalStyles
+    styles={{
+      '@page': {
+        size: 'landscape',
+        margin: '0.4in',
+      },
+      '@media print': {
+        'body': {
+          visibility: 'hidden',
+        },
+        '#eld-print-zone': {
+          visibility: 'visible !important' as 'visible',
+          position: 'absolute !important' as 'absolute',
+          inset: '0 !important',
+          left: '0 !important',
+          top: '0 !important',
+          width: '100% !important',
+          backgroundColor: 'white',
+        },
+        '#eld-print-zone *': {
+          visibility: 'visible !important' as 'visible',
+        },
+        '.eld-log-page': {
+          pageBreakAfter: 'always',
+          pageBreakInside: 'avoid',
+          backgroundColor: 'white',
+          padding: '16px 0',
+        },
+        '.eld-log-page:last-child': {
+          pageBreakAfter: 'auto',
+        },
+      },
+    }}
+  />
+)
+
+// ── Print zone portal ─────────────────────────────────────────────────────────
+// Rendered off-screen so LogCanvas draws correctly (has real dimensions).
+// Becomes the only visible element during printing via CSS above.
+function PrintZone({ dailyLogs }: { dailyLogs: DailyLog[] }) {
+  return createPortal(
+    <div
+      id="eld-print-zone"
+      style={{
+        position: 'absolute',
+        left: '-99999px',
+        top: 0,
+        width: 960,
+        backgroundColor: 'white',
+        pointerEvents: 'none',
+      }}
+    >
+      {dailyLogs.map((log, i) => (
+        <div
+          key={`${log.date}-${i}`}
+          className="eld-log-page"
+        >
+          <LogSheetHeader log={log} totalDays={dailyLogs.length} />
+          <LogCanvas log={log} />
+        </div>
+      ))}
+    </div>,
+    document.body,
+  )
 }
 
 // ── Overlay ───────────────────────────────────────────────────────────────────
@@ -79,6 +147,7 @@ function ELDOverlay({
               <Box
                 key={i}
                 component="button"
+                type="button"
                 onClick={() => setDay(i)}
                 sx={{
                   px: 2,
@@ -164,9 +233,9 @@ function ELDOverlay({
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export function ELDLogSheet({ dailyLogs }: ELDLogSheetProps) {
-  const [selectedDay, setSelectedDay]     = useState(0)
-  const [overlayOpen, setOverlayOpen]     = useState(false)
+export function ELDLogSheet({ dailyLogs }: { dailyLogs: DailyLog[] }) {
+  const [selectedDay, setSelectedDay] = useState(0)
+  const [overlayOpen, setOverlayOpen] = useState(false)
   const currentLog = dailyLogs[selectedDay]
 
   const openOverlay  = useCallback(() => setOverlayOpen(true),  [])
@@ -174,6 +243,10 @@ export function ELDLogSheet({ dailyLogs }: ELDLogSheetProps) {
 
   return (
     <>
+      {/* Global print styles + off-screen print zone */}
+      {PRINT_STYLES}
+      <PrintZone dailyLogs={dailyLogs} />
+
       <Box sx={{ p: 2, pt: 0 }}>
         {/* Section header */}
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
@@ -188,7 +261,6 @@ export function ELDLogSheet({ dailyLogs }: ELDLogSheetProps) {
               color="primary"
               sx={{ '& .MuiBadge-badge': { fontSize: '0.5625rem', height: 16, minWidth: 16 } }}
             />
-            {/* FMCSA OK badge */}
             <Box
               sx={{
                 fontSize: '0.5625rem',
@@ -249,18 +321,15 @@ export function ELDLogSheet({ dailyLogs }: ELDLogSheetProps) {
               mb: 1,
             }}
           >
-            {/* "FULL VIEW" badge */}
             <Box
               sx={{
                 position: 'absolute',
-                top: 6,
-                right: 6,
+                top: 6, right: 6,
                 zIndex: 5,
                 bgcolor: '#1E2A3A',
                 color: '#93B1C2',
                 fontSize: '0.5rem',
-                px: 1,
-                py: 0.375,
+                px: 1, py: 0.375,
                 fontWeight: 700,
                 letterSpacing: '0.5px',
                 pointerEvents: 'none',
@@ -268,8 +337,6 @@ export function ELDLogSheet({ dailyLogs }: ELDLogSheetProps) {
             >
               ⤢ FULL VIEW
             </Box>
-
-            {/* Scaled log sheet preview */}
             <Box
               sx={{
                 transform: 'scale(0.38)',
@@ -292,9 +359,17 @@ export function ELDLogSheet({ dailyLogs }: ELDLogSheetProps) {
           variant="outlined"
           fullWidth
           onClick={() => window.print()}
-          sx={{ color: '#1E2A3A', borderColor: '#1E2A3A', fontSize: '0.6875rem', fontWeight: 600, letterSpacing: '0.4px', textTransform: 'uppercase' }}
+          startIcon={<PrintIcon sx={{ fontSize: 14 }} />}
+          sx={{
+            color: '#1E2A3A',
+            borderColor: '#1E2A3A',
+            fontSize: '0.6875rem',
+            fontWeight: 600,
+            letterSpacing: '0.4px',
+            textTransform: 'uppercase',
+          }}
         >
-          Print All Logs
+          Print All Logs ({dailyLogs.length} page{dailyLogs.length !== 1 ? 's' : ''})
         </Button>
       </Box>
 
