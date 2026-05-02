@@ -58,9 +58,10 @@ export function AppHeader({ hasResults, onNewTrip }: AppHeaderProps) {
             SPOTTER AI
           </Box>
 
-          {/* FMCSA pill */}
+          {/* FMCSA pill — hidden on mobile to avoid overflow */}
           <Box
             sx={{
+              display: { xs: 'none', sm: 'block' },
               border: '1px solid rgba(147,177,194,0.3)',
               borderRadius: '100px',
               px: 1.25,

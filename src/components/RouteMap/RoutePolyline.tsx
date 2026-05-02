@@ -1,28 +1,27 @@
 import { useMemo } from 'react'
 import { Polyline } from 'react-leaflet'
 import type { LatLngExpression } from 'leaflet'
-import type { RouteGeometry } from '@/types/trip'
 
 interface RoutePolylineProps {
-  geometry: RouteGeometry
+  /** GeoJSON [lng, lat] pairs */
+  coordinates: [number, number][]
+  color: string
 }
 
-export function RoutePolyline({ geometry }: RoutePolylineProps) {
+export function RoutePolyline({ coordinates, color }: RoutePolylineProps) {
   const positions = useMemo<LatLngExpression[]>(
-    () => geometry.coordinates.map(([lng, lat]) => [lat, lng]),
-    [geometry],
+    () => coordinates.map(([lng, lat]) => [lat, lng]),
+    [coordinates],
   )
+
+  if (positions.length < 2) return null
 
   return (
     <>
-      <Polyline
-        positions={positions}
-        pathOptions={{ color: '#93B1C2', opacity: 0.35, weight: 10 }}
-      />
-      <Polyline
-        positions={positions}
-        pathOptions={{ color: '#93B1C2', weight: 4, opacity: 1 }}
-      />
+      {/* Soft halo */}
+      <Polyline positions={positions} pathOptions={{ color, opacity: 0.18, weight: 12 }} />
+      {/* Main line */}
+      <Polyline positions={positions} pathOptions={{ color, weight: 3.5, opacity: 0.9 }} />
     </>
   )
 }
