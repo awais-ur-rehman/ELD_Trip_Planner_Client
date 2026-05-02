@@ -1,28 +1,31 @@
-import { useState, useCallback, type KeyboardEvent } from 'react'
+import { useCallback, type KeyboardEvent } from 'react'
 import { Paper, Box, Typography } from '@mui/material'
 
-const TABS = ['Globe', 'Map', 'Routes'] as const
-type MapTab = (typeof TABS)[number]
+export const MAP_TABS = ['Map', 'Routes'] as const
+export type MapTab = (typeof MAP_TABS)[number]
 
-export function MapTabSwitcher() {
-  const [active, setActive] = useState<MapTab>('Map')
+interface MapTabSwitcherProps {
+  activeTab: MapTab
+  onChange: (tab: MapTab) => void
+}
 
+export function MapTabSwitcher({ activeTab, onChange }: MapTabSwitcherProps) {
   const handleKeyDown = useCallback(
     (tab: MapTab, e: KeyboardEvent<HTMLDivElement>) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault()
-        setActive(tab)
+        onChange(tab)
       }
       if (e.key === 'ArrowRight') {
-        const idx = TABS.indexOf(tab)
-        setActive(TABS[(idx + 1) % TABS.length])
+        const idx = MAP_TABS.indexOf(tab)
+        onChange(MAP_TABS[(idx + 1) % MAP_TABS.length])
       }
       if (e.key === 'ArrowLeft') {
-        const idx = TABS.indexOf(tab)
-        setActive(TABS[(idx - 1 + TABS.length) % TABS.length])
+        const idx = MAP_TABS.indexOf(tab)
+        onChange(MAP_TABS[(idx - 1 + MAP_TABS.length) % MAP_TABS.length])
       }
     },
-    [],
+    [onChange],
   )
 
   return (
@@ -46,15 +49,15 @@ export function MapTabSwitcher() {
         WebkitBackdropFilter: 'blur(8px)',
       }}
     >
-      {TABS.map((tab) => {
-        const isActive = active === tab
+      {MAP_TABS.map((tab) => {
+        const isActive = activeTab === tab
         return (
           <Box
             key={tab}
             role="tab"
             tabIndex={isActive ? 0 : -1}
             aria-selected={isActive}
-            onClick={() => setActive(tab)}
+            onClick={() => onChange(tab)}
             onKeyDown={(e) => handleKeyDown(tab, e)}
             sx={{
               px: 2,

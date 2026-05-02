@@ -1,11 +1,12 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Box, Typography, LinearProgress, GlobalStyles } from "@mui/material";
 import { LocalShipping as LocalShippingIcon } from "@mui/icons-material";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
 import { RoutePolyline } from "./RoutePolyline";
 import { StopMarker } from "./StopMarker";
-import { MapTabSwitcher } from "./MapTabSwitcher";
+import { MapTabSwitcher, type MapTab } from "./MapTabSwitcher";
+import { RoutesBreakdown } from "./RoutesBreakdown";
 import type { TripPlan, Stop, RouteGeometry } from "@/types/trip";
 import "leaflet/dist/leaflet.css";
 
@@ -147,9 +148,15 @@ interface RouteMapProps {
   plan: TripPlan | null;
   focusedStop: Stop | null;
   isLoading: boolean;
+  cycleUsedAtStart?: number;
 }
 
-export function RouteMap({ plan, focusedStop, isLoading }: RouteMapProps) {
+export function RouteMap({ plan, focusedStop, isLoading, cycleUsedAtStart = 0 }: RouteMapProps) {
+  const [activeTab, setActiveTab] = useState<MapTab>('Map')
+
+  // Reset to Map tab when a new plan loads
+  useMemo(() => { if (plan) setActiveTab('Map') }, [plan])
+
   // Split route into two colored legs at the pickup point
   const routeLegs = useMemo(() => {
     if (!plan) return null;
@@ -244,7 +251,21 @@ export function RouteMap({ plan, focusedStop, isLoading }: RouteMapProps) {
         </Box>
       )}
 
-      <MapTabSwitcher />
+      {/* Routes breakdown overlay — covers map, keeps Leaflet mounted */}
+      {activeTab === 'Routes' && plan && (
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 400,
+            overflow: 'hidden',
+          }}
+        >
+          <RoutesBreakdown plan={plan} cycleUsedAtStart={cycleUsedAtStart} />
+        </Box>
+      )}
+
+      <MapTabSwitcher activeTab={activeTab} onChange={setActiveTab} />
     </Box>
   );
 }

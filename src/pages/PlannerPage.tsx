@@ -18,6 +18,7 @@ import { RouteMap } from '@/components/RouteMap/RouteMap'
 import { StatCards } from '@/components/TripStats/StatCards'
 import { StopTimeline } from '@/components/StopTimeline/StopTimeline'
 import { TripSummary } from '@/components/TripSummary/TripSummary'
+import { HOSCompliance } from '@/components/TripSummary/HOSCompliance'
 import { ELDLogSheet } from '@/components/ELDLogSheet/ELDLogSheet'
 import { LoadingState } from '@/components/common/LoadingState'
 import { ErrorSnackbar } from '@/components/common/ErrorSnackbar'
@@ -92,7 +93,7 @@ export function PlannerPage() {
             <Box sx={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
               {/* Map – always mounted so Leaflet state is preserved */}
               <Box sx={{ height: '100%', display: mobileTab === 0 ? 'block' : 'none' }}>
-                <RouteMap plan={tripPlan ?? null} focusedStop={focusedStop} isLoading={isPending} />
+                <RouteMap plan={tripPlan ?? null} focusedStop={focusedStop} isLoading={isPending} cycleUsedAtStart={cycleUsedAtStart} />
               </Box>
 
               {mobileTab === 1 && tripPlan && (
@@ -109,6 +110,7 @@ export function PlannerPage() {
                 <Box sx={{ height: '100%', overflowY: 'auto', bgcolor: 'background.default' }}>
                   <TripSummary plan={tripPlan} cycleUsedAtStart={cycleUsedAtStart} />
                   <ELDLogSheet dailyLogs={tripPlan.daily_logs} />
+                  <HOSCompliance plan={tripPlan} cycleUsedAtStart={cycleUsedAtStart} />
                 </Box>
               )}
             </Box>
@@ -166,7 +168,7 @@ export function PlannerPage() {
 
         {/* Map */}
         <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-          <RouteMap plan={tripPlan ?? null} focusedStop={focusedStop} isLoading={isPending} />
+          <RouteMap plan={tripPlan ?? null} focusedStop={focusedStop} isLoading={isPending} cycleUsedAtStart={cycleUsedAtStart} />
         </Box>
 
         {/* Right panel */}
