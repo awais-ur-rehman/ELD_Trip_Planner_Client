@@ -1,5 +1,5 @@
 import { Box, Typography, Divider } from '@mui/material'
-import { formatDate } from '@/lib/utils'
+import { formatDate, formatShortLocation } from '@/lib/utils'
 import type { DailyLog } from '@/types/trip'
 
 interface LogSheetHeaderProps {
@@ -55,7 +55,7 @@ export function LogSheetHeader({ log }: LogSheetHeaderProps) {
             From
           </Typography>
           <Typography sx={{ fontSize: '0.6875rem', fontWeight: 500, color: '#424242' }}>
-            {log.from_location}
+            {formatShortLocation(log.from_location)}
           </Typography>
         </Box>
         <Box>
@@ -63,7 +63,7 @@ export function LogSheetHeader({ log }: LogSheetHeaderProps) {
             To
           </Typography>
           <Typography sx={{ fontSize: '0.6875rem', fontWeight: 500, color: '#424242' }}>
-            {log.to_location}
+            {formatShortLocation(log.to_location)}
           </Typography>
         </Box>
       </Box>

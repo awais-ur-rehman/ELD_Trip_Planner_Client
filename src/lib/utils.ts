@@ -25,6 +25,18 @@ export function hourToTimeLabel(hour: number): string {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
 }
 
+export function formatShortLocation(locationName: string): string {
+  return locationName.split(',')[0].trim()
+}
+
+export function formatDuration(minutes: number): string {
+  if (minutes === 0) return ''
+  if (minutes < 60) return `${minutes} min`
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  return m === 0 ? `${h}h` : `${h}h ${m}m`
+}
+
 export function cycleSliderColor(hours: number): 'secondary' | 'warning' | 'error' {
   if (hours >= 68) return 'error'
   if (hours >= 60) return 'warning'

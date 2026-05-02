@@ -1,3 +1,4 @@
+import { type KeyboardEvent } from 'react'
 import { Box, Typography, Chip, Divider } from '@mui/material'
 import {
   Timeline,
@@ -6,18 +7,18 @@ import {
   TimelineConnector,
   TimelineContent,
   TimelineDot,
-  TimelineOppositeContent,
 } from '@mui/lab'
-import { formatTime } from '@/lib/utils'
+import { formatTime, formatShortLocation, formatDuration } from '@/lib/utils'
 import { STOP_COLORS } from '@/constants/colors'
 import type { Stop } from '@/types/trip'
 
-const STOP_DURATION_LABELS: Partial<Record<string, string>> = {
-  rest_10hr: '10 hours',
-  break_30min: '30 min',
-  fuel: '30 min',
-  pickup: '1 hour',
-  dropoff: '1 hour',
+const STOP_TYPE_LABELS: Record<string, string> = {
+  current: 'Starting Point',
+  pickup: 'Pickup',
+  dropoff: 'Delivery',
+  fuel: 'Fuel Stop',
+  rest_10hr: '10-Hour Rest',
+  break_30min: '30-Min Break',
 }
 
 interface StopTimelineProps {
@@ -26,55 +27,102 @@ interface StopTimelineProps {
 }
 
 export function StopTimeline({ stops, onStopClick }: StopTimelineProps) {
+  function handleKeyDown(e: KeyboardEvent<HTMLLIElement>, stop: Stop) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      onStopClick(stop)
+    }
+  }
+
   return (
-    <Box sx={{ px: 1 }}>
-      <Divider sx={{ mb: 1 }} />
-      <Typography variant="caption" color="text.secondary" sx={{ px: 2, display: 'block', mb: 0.5 }}>
-        Stop Schedule
-      </Typography>
-      <Timeline sx={{ p: 0, m: 0 }}>
+    <Box>
+      <Divider />
+      <Box sx={{ px: 2, pt: 1.5, pb: 0.5 }}>
+        <Typography variant="caption" color="text.secondary">
+          Stop Schedule
+        </Typography>
+      </Box>
+
+      <Timeline
+        sx={{
+          p: 0,
+          m: 0,
+          '& .MuiTimelineItem-root': { minHeight: 'unset' },
+        }}
+      >
         {stops.map((stop, i) => {
           const color = STOP_COLORS[stop.type]
-          const durationLabel = STOP_DURATION_LABELS[stop.type]
           const isLast = i === stops.length - 1
+          const typeLabel = STOP_TYPE_LABELS[stop.type] ?? stop.type
+          const shortLocation = formatShortLocation(stop.location_name)
+          const durationLabel = formatDuration(stop.duration_minutes)
 
           return (
             <TimelineItem
               key={`${stop.type}-${i}`}
+              role="button"
+              tabIndex={0}
+              aria-label={`${typeLabel} at ${shortLocation}, ${formatTime(stop.arrival_time_iso)}`}
               onClick={() => onStopClick(stop)}
+              onKeyDown={(e) => handleKeyDown(e, stop)}
               sx={{
                 cursor: 'pointer',
                 borderRadius: 1,
+                mx: 0.5,
+                outline: 'none',
                 '&:hover': { bgcolor: '#F4F7FA' },
-                minHeight: 'unset',
+                '&:focus-visible': {
+                  bgcolor: '#F4F7FA',
+                  outline: '2px solid',
+                  outlineColor: 'secondary.main',
+                  outlineOffset: -2,
+                },
                 '&::before': { display: 'none' },
               }}
             >
-              <TimelineSeparator>
-                <TimelineDot sx={{ bgcolor: color, m: 0.5, width: 10, height: 10 }} />
-                {!isLast && <TimelineConnector sx={{ bgcolor: 'divider' }} />}
-              </TimelineSeparator>
-              <TimelineContent sx={{ py: 0.75, px: 1.5 }}>
-                <Typography variant="body2" fontWeight={500} sx={{ lineHeight: 1.4 }}>
-                  {stop.label}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.6875rem' }}>
-                  {formatTime(stop.arrival_time_iso)} · {stop.location_name}
-                </Typography>
-                {durationLabel && (
-                  <Chip
-                    label={durationLabel}
-                    size="small"
-                    sx={{
-                      mt: 0.5,
-                      height: 18,
-                      fontSize: '0.625rem',
-                      bgcolor: `${color}20`,
-                      color,
-                      fontWeight: 500,
-                    }}
-                  />
+              <TimelineSeparator sx={{ pl: 1.5 }}>
+                <TimelineDot
+                  sx={{
+                    bgcolor: color,
+                    m: '10px 0',
+                    width: 10,
+                    height: 10,
+                    boxShadow: `0 0 0 3px ${color}22`,
+                  }}
+                />
+                {!isLast && (
+                  <TimelineConnector sx={{ bgcolor: 'divider', width: '1px' }} />
                 )}
+              </TimelineSeparator>
+
+              <TimelineContent sx={{ py: 0.75, px: 1.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75, flexWrap: 'wrap' }}>
+                  <Typography variant="body2" fontWeight={500} sx={{ lineHeight: 1.4 }}>
+                    {typeLabel}
+                  </Typography>
+                  {durationLabel && (
+                    <Chip
+                      label={durationLabel}
+                      size="small"
+                      sx={{
+                        height: 16,
+                        fontSize: '0.625rem',
+                        bgcolor: `${color}18`,
+                        color,
+                        fontWeight: 600,
+                        border: 'none',
+                        '& .MuiChip-label': { px: 0.75 },
+                      }}
+                    />
+                  )}
+                </Box>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontSize: '0.6875rem', lineHeight: 1.5 }}
+                >
+                  {formatTime(stop.arrival_time_iso)} · {shortLocation}
+                </Typography>
               </TimelineContent>
             </TimelineItem>
           )

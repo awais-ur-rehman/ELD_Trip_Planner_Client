@@ -1,17 +1,25 @@
-import { TextField, InputAdornment } from '@mui/material'
-import LocationOnIcon from '@mui/icons-material/LocationOn'
-import LocalShippingIcon from '@mui/icons-material/LocalShipping'
-import FlagIcon from '@mui/icons-material/Flag'
+import { useState, type ElementType } from 'react'
+import {
+  Autocomplete,
+  TextField,
+  InputAdornment,
+  CircularProgress,
+} from '@mui/material'
+import {
+  LocationOn as LocationOnIcon,
+  LocalShipping as LocalShippingIcon,
+  Flag as FlagIcon,
+} from '@mui/icons-material'
 import { STOP_COLORS } from '@/constants/colors'
-import type { StopType } from '@/types/trip'
+import { useLocationSearch } from '@/hooks/useLocationSearch'
 
-const ICONS: Record<'current' | 'pickup' | 'dropoff', React.ElementType> = {
+const ICONS: Record<'current' | 'pickup' | 'dropoff', ElementType> = {
   current: LocationOnIcon,
   pickup: LocalShippingIcon,
   dropoff: FlagIcon,
 }
 
-interface LocationInputProps {
+export interface LocationInputProps {
   label: string
   placeholder: string
   stopType: 'current' | 'pickup' | 'dropoff'
@@ -30,24 +38,56 @@ export function LocationInput({
   error,
   helperText,
 }: LocationInputProps) {
+  const [inputValue, setInputValue] = useState(value)
+  const { options, loading } = useLocationSearch(inputValue)
   const Icon = ICONS[stopType]
   const iconColor = STOP_COLORS[stopType]
 
   return (
-    <TextField
-      label={label}
-      placeholder={placeholder}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      error={error}
-      helperText={helperText}
-      InputProps={{
-        startAdornment: (
-          <InputAdornment position="start">
-            <Icon sx={{ color: iconColor, fontSize: 20 }} />
-          </InputAdornment>
-        ),
+    <Autocomplete
+      freeSolo
+      options={options.map((o) => o.label)}
+      inputValue={inputValue}
+      onInputChange={(_, newVal) => {
+        setInputValue(newVal)
+        onChange(newVal)
       }}
+      onChange={(_, selected) => {
+        if (selected && typeof selected === 'string') {
+          setInputValue(selected)
+          onChange(selected)
+        }
+      }}
+      loading={loading}
+      filterOptions={(x) => x}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label={label}
+          placeholder={placeholder}
+          error={error}
+          helperText={helperText}
+          inputProps={{
+            ...params.inputProps,
+            'aria-label': label,
+            autoComplete: 'off',
+          }}
+          InputProps={{
+            ...params.InputProps,
+            startAdornment: (
+              <InputAdornment position="start">
+                <Icon sx={{ color: iconColor, fontSize: 20 }} />
+              </InputAdornment>
+            ),
+            endAdornment: (
+              <>
+                {loading && <CircularProgress size={16} sx={{ mr: 1 }} />}
+                {params.InputProps.endAdornment}
+              </>
+            ),
+          }}
+        />
+      )}
     />
   )
 }

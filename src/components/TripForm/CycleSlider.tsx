@@ -37,6 +37,8 @@ export function CycleSlider({ value, onChange }: CycleSliderProps) {
         step={0.5}
         color={sliderColor}
         disabled={isAtLimit}
+        aria-label="Current cycle hours used"
+        aria-valuetext={`${value} hours used, ${MAX_CYCLE_HOURS - value} remaining`}
         sx={{ mb: 1.5 }}
       />
 
@@ -48,6 +50,8 @@ export function CycleSlider({ value, onChange }: CycleSliderProps) {
             variant="outlined"
             size="small"
             onClick={() => onChange(v)}
+            aria-label={`Set cycle hours to ${v}`}
+            aria-pressed={value === v}
             sx={{
               cursor: 'pointer',
               borderColor: value === v ? 'primary.main' : 'divider',

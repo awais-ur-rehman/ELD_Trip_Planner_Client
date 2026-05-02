@@ -44,7 +44,7 @@ export const theme = createTheme({
   components: {
     MuiButton: {
       styleOverrides: {
-        root: { borderRadius: 10, padding: '10px 20px' },
+        root: { borderRadius: 0, padding: '10px 20px' },
         containedPrimary: {
           backgroundColor: '#1E2A3A',
           '&:hover': { backgroundColor: '#2D3F54' },
@@ -57,7 +57,7 @@ export const theme = createTheme({
         root: {
           '& .MuiOutlinedInput-root': {
             backgroundColor: '#F4F7FA',
-            borderRadius: 10,
+            borderRadius: 0,
             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
               borderColor: '#93B1C2',
               borderWidth: 2,
@@ -69,14 +69,14 @@ export const theme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
+          borderRadius: 0,
           border: '1px solid #D5DEE3',
           boxShadow: 'none',
         },
       },
     },
     MuiChip: {
-      styleOverrides: { root: { borderRadius: 6 } },
+      styleOverrides: { root: { borderRadius: 12 } },
     },
     MuiTab: {
       styleOverrides: {

@@ -26,4 +26,13 @@ export default defineConfig({
     target: 'es2020',
     sourcemap: true,
   },
+  optimizeDeps: {
+    include: [
+      '@mui/material',
+      '@mui/icons-material',
+      '@mui/lab',
+      '@emotion/react',
+      '@emotion/styled',
+    ],
+  },
 })

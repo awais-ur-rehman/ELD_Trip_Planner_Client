@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Box } from '@mui/material'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { TripBreadcrumb } from '@/components/layout/TripBreadcrumb'
@@ -11,21 +11,28 @@ import { ELDLogSheet } from '@/components/ELDLogSheet/ELDLogSheet'
 import { LoadingState } from '@/components/common/LoadingState'
 import { ErrorSnackbar } from '@/components/common/ErrorSnackbar'
 import { useTripPlan } from '@/hooks/useTripPlan'
-import type { TripPlan, Stop } from '@/types/trip'
+import type { TripFormValues, Stop } from '@/types/trip'
 
 export function PlannerPage() {
   const { mutate, data: tripPlan, isPending, error, reset } = useTripPlan()
   const [focusedStop, setFocusedStop] = useState<Stop | null>(null)
+  const [cycleUsedAtStart, setCycleUsedAtStart] = useState(0)
 
   const hasResults = Boolean(tripPlan)
+
+  const handleSubmit = useCallback(
+    (values: TripFormValues) => {
+      setCycleUsedAtStart(values.current_cycle_used_hours)
+      mutate(values)
+    },
+    [mutate],
+  )
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
       <AppHeader />
 
-      {hasResults && tripPlan && (
-        <TripBreadcrumb plan={tripPlan} />
-      )}
+      {hasResults && tripPlan && <TripBreadcrumb plan={tripPlan} />}
 
       <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <Box
@@ -42,26 +49,19 @@ export function PlannerPage() {
           {isPending && <LoadingState variant="left-panel" />}
 
           {!isPending && !hasResults && (
-            <TripForm onSubmit={mutate} isLoading={isPending} />
+            <TripForm onSubmit={handleSubmit} isLoading={isPending} />
           )}
 
           {!isPending && hasResults && tripPlan && (
             <>
-              <StatCards plan={tripPlan} />
-              <StopTimeline
-                stops={tripPlan.stops}
-                onStopClick={setFocusedStop}
-              />
+              <StatCards plan={tripPlan} cycleUsedAtStart={cycleUsedAtStart} />
+              <StopTimeline stops={tripPlan.stops} onStopClick={setFocusedStop} />
             </>
           )}
         </Box>
 
         <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-          <RouteMap
-            plan={tripPlan ?? null}
-            focusedStop={focusedStop}
-            isLoading={isPending}
-          />
+          <RouteMap plan={tripPlan ?? null} focusedStop={focusedStop} isLoading={isPending} />
         </Box>
 
         {hasResults && tripPlan && (
@@ -81,10 +81,7 @@ export function PlannerPage() {
         )}
       </Box>
 
-      <ErrorSnackbar
-        error={error?.message ?? null}
-        onClose={reset}
-      />
+      <ErrorSnackbar error={error?.message ?? null} onClose={reset} />
     </Box>
   )
 }

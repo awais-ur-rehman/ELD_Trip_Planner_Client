@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import '@/lib/leaflet-setup'
 import { AppProviders } from '@/providers/AppProviders'
 import { App } from '@/App'
 

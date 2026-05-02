@@ -1,9 +1,16 @@
-import { useState } from 'react'
+import { useState, useEffect, type FormEvent } from 'react'
 import { Box, Typography, Button, CircularProgress } from '@mui/material'
 import { LocationInput } from './LocationInput'
 import { CycleSlider } from './CycleSlider'
 import { HOSReference } from './HOSReference'
 import type { TripFormValues } from '@/types/trip'
+
+const LOADING_MESSAGES = [
+  'Geocoding your locations...',
+  'Fetching route from OSRM...',
+  'Running HOS algorithm...',
+  'Building ELD log sheets...',
+]
 
 interface TripFormProps {
   onSubmit: (values: TripFormValues) => void
@@ -17,6 +24,18 @@ export function TripForm({ onSubmit, isLoading }: TripFormProps) {
     dropoff_location: '',
     current_cycle_used_hours: 0,
   })
+  const [msgIndex, setMsgIndex] = useState(0)
+
+  useEffect(() => {
+    if (!isLoading) {
+      setMsgIndex(0)
+      return
+    }
+    const id = setInterval(() => {
+      setMsgIndex((i) => (i + 1) % LOADING_MESSAGES.length)
+    }, 1500)
+    return () => clearInterval(id)
+  }, [isLoading])
 
   const isDisabled =
     !values.current_location.trim() ||
@@ -24,7 +43,7 @@ export function TripForm({ onSubmit, isLoading }: TripFormProps) {
     !values.dropoff_location.trim() ||
     isLoading
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     onSubmit(values)
   }
@@ -51,14 +70,7 @@ export function TripForm({ onSubmit, isLoading }: TripFormProps) {
           onChange={(v) => setField('current_location', v)}
         />
 
-        <Box
-          sx={{
-            height: 16,
-            ml: 2.5,
-            borderLeft: '2px dashed',
-            borderColor: 'divider',
-          }}
-        />
+        <Box sx={{ height: 16, ml: 2.5, borderLeft: '2px dashed', borderColor: 'divider' }} />
 
         <LocationInput
           label="Pickup Location"
@@ -68,14 +80,7 @@ export function TripForm({ onSubmit, isLoading }: TripFormProps) {
           onChange={(v) => setField('pickup_location', v)}
         />
 
-        <Box
-          sx={{
-            height: 16,
-            ml: 2.5,
-            borderLeft: '2px dashed',
-            borderColor: 'divider',
-          }}
-        />
+        <Box sx={{ height: 16, ml: 2.5, borderLeft: '2px dashed', borderColor: 'divider' }} />
 
         <LocationInput
           label="Dropoff Location"
@@ -106,6 +111,15 @@ export function TripForm({ onSubmit, isLoading }: TripFormProps) {
         {isLoading ? 'Calculating...' : 'Plan My Trip →'}
       </Button>
 
+      {isLoading && (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ mt: 1.5, textAlign: 'center', minHeight: 20 }}
+        >
+          {LOADING_MESSAGES[msgIndex]}
+        </Typography>
+      )}
 
       <Box sx={{ mt: 3 }}>
         <HOSReference />

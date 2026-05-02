@@ -6,7 +6,7 @@ import {
   Box,
   Chip,
 } from '@mui/material'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material'
 import { HOS_RULES } from '@/constants/hos'
 
 export function HOSReference() {

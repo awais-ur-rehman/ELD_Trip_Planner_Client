@@ -1,5 +1,5 @@
 import { AppBar, Toolbar, Typography, Chip, Box } from '@mui/material'
-import LocalShippingIcon from '@mui/icons-material/LocalShipping'
+import { LocalShipping as LocalShippingIcon } from '@mui/icons-material'
 
 export function AppHeader() {
   return (
