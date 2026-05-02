@@ -14,7 +14,7 @@ import {
   FiberManualRecord as DotIcon,
   EmojiFlags as FlagIcon,
 } from '@mui/icons-material'
-import { format, parseISO, addMinutes } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 import { formatHours, formatMiles } from '@/lib/utils'
 import { STOP_COLORS } from '@/constants/colors'
 import type { TripPlan, Stop } from '@/types/trip'

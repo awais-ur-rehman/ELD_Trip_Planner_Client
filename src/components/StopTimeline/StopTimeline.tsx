@@ -27,7 +27,7 @@ interface StopTimelineProps {
 }
 
 export function StopTimeline({ stops, onStopClick }: StopTimelineProps) {
-  function handleKeyDown(e: KeyboardEvent<HTMLLIElement>, stop: Stop) {
+  function handleKeyDown(e: KeyboardEvent<HTMLElement>, stop: Stop) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault()
       onStopClick(stop)

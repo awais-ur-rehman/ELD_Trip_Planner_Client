@@ -9,7 +9,7 @@ interface TripBreadcrumbProps {
 export function TripBreadcrumb({ plan }: TripBreadcrumbProps) {
   const originStop  = plan.stops[0]
   const pickupStop  = plan.stops.find((s) => s.type === 'pickup')
-  const dropoffStop = plan.stops.find((s) => s.type === 'dropoff') ?? plan.stops.at(-1)
+  const dropoffStop = plan.stops.find((s) => s.type === 'dropoff') ?? plan.stops[plan.stops.length - 1]
 
   const origin  = formatShortLocation(originStop?.location_name ?? '')
   const pickup  = pickupStop ? formatShortLocation(pickupStop.location_name) : null
